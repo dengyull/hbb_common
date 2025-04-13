@@ -1792,9 +1792,19 @@ impl UserDefaultConfig {
         cfg.0.get(key)
     }
 
-    pub fn load() -> UserDefaultConfig {
-        Config::load_::<UserDefaultConfig>("_default")
-    }
+	pub fn load() -> UserDefaultConfig {
+		let mut config = Config::load_::<UserDefaultConfig>("_default");
+		
+		// Set defaults if they don't exist
+		if config.get(keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION).is_empty() {
+			config.options.insert(
+				keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION.to_string(),
+				"Y".to_string()
+			);
+		}
+		
+		config
+	}
 
     #[inline]
     fn store(&self) {
@@ -1818,6 +1828,7 @@ impl UserDefaultConfig {
                 self.get_double_string(key, 50.0, 10.0, 0xFFF as f64)
             }
             keys::OPTION_CUSTOM_FPS => self.get_double_string(key, 30.0, 5.0, 120.0),
+			keys::OPTION_ALLOW_REMOTE_CONFIG_MODIFICATION => self.get_string(key, "Y", vec!["", "N"]),
             keys::OPTION_ENABLE_FILE_COPY_PASTE => self.get_string(key, "Y", vec!["", "N"]),
             _ => self
                 .get_after(key)
